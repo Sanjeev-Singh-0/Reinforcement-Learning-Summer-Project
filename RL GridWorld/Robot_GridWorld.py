@@ -56,8 +56,10 @@ def map_state_to_index(state, n_x):
 
 beta = 0.7 # learning rate
 gamma = 0.9 # discount factor
-random_act = 0.1 # probability of taking a random non optimal action
-num_trials = 100 # number of trial to train robot
+epsilon = 1.0 # probability of taking a random non optimal action
+epsilon_decay = 0.999
+min_epsilon = 0.01
+num_trials = 300 # number of trial to train robot
 
 # Q table 
 
@@ -87,7 +89,7 @@ for trial in range(num_trials):
 
         state_index = map_state_to_index(state, n_x)
 
-        if random.random() < random_act:
+        if random.random() < epsilon:
             action = random.choice(list(actions.keys()))
         else:
             action = np.argmax(Q_table[state_index])
@@ -111,6 +113,9 @@ for trial in range(num_trials):
         Q_observed = reward + gamma * np.max(Q_table[next_state_index]) # Bellman Equation where gamma is the discount factor
         tde = Q_observed - Q_table[state_index][action] # Temporal difference error
         Q_table[state_index][action] = Q_table[state_index][action] + beta * tde # Update rule
+
+        # Use an epsilon greedy function where epsilon decays with each trial
+        epsilon = max(min_epsilon , epsilon * epsilon_decay)
 
         state = next_state
 
